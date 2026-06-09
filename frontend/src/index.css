@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-magic-primary via-magic-secondary to-magic-accent min-h-screen font-body overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .btn-magic {
+    @apply relative overflow-hidden bg-gradient-to-r from-magic-gold to-yellow-600 text-magic-primary font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+  }
+  
+  .btn-magic:active {
+    transform: translateY(2px);
+  }
+  
+  .btn-secondary-magic {
+    @apply bg-gradient-to-r from-magic-spell to-purple-800 text-white font-semibold py-2 px-5 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .card-magic {
+    @apply bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-magic-gold/20;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+  
+  .input-magic {
+    @apply w-full px-4 py-3 rounded-lg bg-white/5 border border-magic-gold/30 text-white placeholder-gray-400 focus:border-magic-gold focus:ring-2 focus:ring-magic-gold/50 focus:outline-none transition-all;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-md rounded-2xl border border-white/10;
+  }
+  
+  .magic-title {
+    @apply font-title text-5xl font-bold bg-gradient-to-r from-magic-gold via-yellow-300 to-magic-gold bg-clip-text text-transparent;
+    text-shadow: 0 0 30px rgba(255,215,0,0.3);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  /* Animación solo para el login al hacer clic */
+  @keyframes magicReveal {
+    0% {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  .magic-reveal {
+    animation: magicReveal 0.4s ease-out forwards;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(5deg); }
+  66% { transform: translateY(8px) rotate(-3deg); }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(-10%) translateY(0) rotate(45deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(110vw) translateY(50vh) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

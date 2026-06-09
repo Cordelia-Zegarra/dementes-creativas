@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dementes_postgres
+    environment:
+      POSTGRES_DB: dementes_db
+      POSTGRES_USER: dementes_admin
+      POSTGRES_PASSWORD: Yj1996dmn!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dementes_network
+
+volumes:
+  postgres_data:
+
+networks:
+  dementes_network:
+    driver: bridge
