@@ -40,3 +40,5 @@ docker/postgres/data/
 # Temp
 *.tmp
 .cache/
+*.tar
+*.tar.gz
