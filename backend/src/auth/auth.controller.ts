@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Req, UseGuards, Ip, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Get, Ip, Headers, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CaptchaService } from './captcha.service';
 import { RegisterDto } from './dto/register.dto';
@@ -18,6 +18,20 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
+    // Validar CAPTCHA
+    if (!registerDto.captchaId || !registerDto.captcha) {
+      throw new BadRequestException('CAPTCHA requerido');
+    }
+    
+    const isValid = this.captchaService.validateCaptcha(
+      registerDto.captchaId,
+      registerDto.captcha
+    );
+    
+    if (!isValid) {
+      throw new BadRequestException('CAPTCHA incorrecto');
+    }
+    
     return this.authService.register(registerDto);
   }
 
@@ -27,6 +41,20 @@ export class AuthController {
     @Ip() ip: string,
     @Headers('user-agent') userAgent: string,
   ) {
+    // Validar CAPTCHA
+    if (!loginDto.captchaId || !loginDto.captcha) {
+      throw new BadRequestException('CAPTCHA requerido');
+    }
+    
+    const isValid = this.captchaService.validateCaptcha(
+      loginDto.captchaId,
+      loginDto.captcha
+    );
+    
+    if (!isValid) {
+      throw new BadRequestException('CAPTCHA incorrecto');
+    }
+    
     return this.authService.login(loginDto, ip, userAgent);
   }
 
