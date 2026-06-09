@@ -10,13 +10,16 @@ import MagicCharts from '../components/MagicCharts';
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [products, setProducts] = useState([]);
+  const [deletedProducts, setDeletedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    fetchDeletedProducts();
   }, []);
 
   const fetchProducts = async () => {
@@ -30,14 +33,37 @@ const Dashboard = () => {
     }
   };
 
+  const fetchDeletedProducts = async () => {
+    try {
+      const response = await productAPI.getDeleted();
+      setDeletedProducts(response.data);
+    } catch (error) {
+      console.error('Error al cargar eliminados:', error);
+    }
+  };
+
   const handleDelete = async (id, name) => {
     if (window.confirm(`¿Eliminar "${name}" del inventario?`)) {
       try {
         await productAPI.delete(id);
         toast.success(`📦 "${name}" ha sido archivado mágicamente`);
         fetchProducts();
+        fetchDeletedProducts();
       } catch (error) {
         toast.error('Error al eliminar');
+      }
+    }
+  };
+
+  const handleRestore = async (id, name) => {
+    if (window.confirm(`¿Restaurar "${name}" al inventario?`)) {
+      try {
+        await productAPI.restore(id);
+        toast.success(`✨ "${name}" ha sido restaurado mágicamente`);
+        fetchProducts();
+        fetchDeletedProducts();
+      } catch (error) {
+        toast.error('Error al restaurar');
       }
     }
   };
@@ -54,6 +80,7 @@ const Dashboard = () => {
 
   const handleModalSuccess = () => {
     fetchProducts();
+    fetchDeletedProducts();
   };
 
   const tabs = [
@@ -61,6 +88,9 @@ const Dashboard = () => {
     { id: 'reports', label: 'Pergaminos', icon: '📄' },
     { id: 'charts', label: 'Profecías', icon: '🔮' },
   ];
+
+  const currentProducts = showDeleted ? deletedProducts : products;
+  const isDeletedView = showDeleted;
 
   return (
     <div className="min-h-screen relative">
@@ -108,7 +138,10 @@ const Dashboard = () => {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setShowDeleted(false);
+              }}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                 activeTab === tab.id
                   ? 'bg-magic-gold text-magic-primary shadow-lg'
@@ -128,22 +161,48 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
               <div>
                 <h2 className="font-title text-3xl font-bold text-magic-gold flex items-center gap-3">
-                  <span>📜</span> Catálogo Mágico
+                  <span>📜</span> 
+                  {isDeletedView ? 'Productos Archivados' : 'Catálogo Mágico'}
                 </h2>
-                <p className="text-white/60 font-magic">Productos encantados del mundo de Harry Potter</p>
+                <p className="text-white/60 font-magic">
+                  {isDeletedView 
+                    ? 'Productos eliminados mágicamente que pueden ser restaurados' 
+                    : 'Productos encantados del mundo de Harry Potter'}
+                </p>
               </div>
-              <button
-                onClick={handleAdd}
-                className="btn-magic text-sm"
-              >
-                ✨ Agregar Producto
-              </button>
+              <div className="flex gap-3">
+                {!isDeletedView && (
+                  <button
+                    onClick={handleAdd}
+                    className="btn-magic text-sm"
+                  >
+                    ✨ Agregar Producto
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowDeleted(!showDeleted)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                    isDeletedView 
+                      ? 'bg-magic-gold text-magic-primary' 
+                      : 'bg-red-500/20 text-white hover:bg-red-500/30'
+                  }`}
+                >
+                  {isDeletedView ? '📦 Ver Inventario' : '🗑️ Ver Archivados'}
+                </button>
+              </div>
             </div>
             
             {loading ? (
               <div className="text-center py-12">
                 <div className="text-6xl animate-spin inline-block">🪄</div>
                 <p className="text-white/80 mt-4">Cargando productos mágicos...</p>
+              </div>
+            ) : currentProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-white/80">
+                  {isDeletedView ? 'No hay productos archivados' : 'No hay productos en el inventario'}
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -160,36 +219,63 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-b border-white/10 hover:bg-white/5">
+                    {currentProducts.map((product) => (
+                      <tr key={product.id} className={`border-b border-white/10 hover:bg-white/5 ${
+                        isDeletedView ? 'opacity-70' : ''
+                      }`}>
                         <td className="py-3 font-magic text-magic-gold">#{product.id}</td>
-                        <td className="py-3 font-semibold">{product.name}</td>
+                        <td className="py-3 font-semibold">
+                          {product.name}
+                          {isDeletedView && (
+                            <span className="ml-2 text-xs text-red-400">(Archivado)</span>
+                          )}
+                        </td>
                         <td className="py-3 text-white/70">{product.category || '—'}</td>
                         <td className="py-3 text-right text-white/50 line-through">Bs. {product.oldPrice}</td>
                         <td className="py-3 text-right font-bold text-magic-gold">Bs. {product.currentPrice}</td>
                         <td className="py-3 text-center">{product.stock}</td>
                         <td className="py-3 text-center">
                           <div className="flex gap-2 justify-center">
-                            <button
-                              onClick={() => handleEdit(product)}
-                              className="text-magic-gold hover:text-yellow-400 transition"
-                              title="Editar"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              onClick={() => handleDelete(product.id, product.name)}
-                              className="text-red-400 hover:text-red-300 transition"
-                              title="Eliminar"
-                            >
-                              🗑️
-                            </button>
+                            {!isDeletedView ? (
+                              <>
+                                <button
+                                  onClick={() => handleEdit(product)}
+                                  className="text-magic-gold hover:text-yellow-400 transition"
+                                  title="Editar"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(product.id, product.name)}
+                                  className="text-red-400 hover:text-red-300 transition"
+                                  title="Eliminar"
+                                >
+                                  🗑️
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => handleRestore(product.id, product.name)}
+                                className="text-green-400 hover:text-green-300 transition"
+                                title="Restaurar"
+                              >
+                                🔄 Restaurar
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            
+            {isDeletedView && deletedProducts.length > 0 && (
+              <div className="mt-4 p-3 bg-red-500/10 rounded-lg text-center">
+                <p className="text-red-400 text-sm">
+                  ⚠️ Estos productos están archivados. Puedes restaurarlos o eliminarlos permanentemente desde la base de datos.
+                </p>
               </div>
             )}
           </div>
@@ -202,7 +288,7 @@ const Dashboard = () => {
               Pergaminos de Reportes
             </h2>
             <p className="text-white/70 font-magic mb-6">
-              Genera un pergamino mágico con todo tu inventario
+              Genera un pergamino mágico con todo tu inventario activo
             </p>
             <button 
               onClick={() => generateProductPDF(products, user?.username)}

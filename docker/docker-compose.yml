@@ -1,0 +1,67 @@
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: dementes_postgres
+    environment:
+      POSTGRES_DB: dementes_db
+      POSTGRES_USER: dementes_admin
+      POSTGRES_PASSWORD: Yj1996dmn!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dementes_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dementes_admin -d dementes_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend NestJS
+  backend:
+    build: ../backend
+    container_name: dementes_backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: dementes_admin
+      DB_PASSWORD: Yj1996dmn!
+      DB_DATABASE: dementes_db
+      JWT_SECRET: DementesSecretKey2026_HarryPotter_Wizard_Strong_Key
+      JWT_EXPIRES_IN: 8h
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dementes_network
+    restart: unless-stopped
+
+  # Frontend React (modo desarrollo)
+  frontend:
+    build: ../frontend
+    container_name: dementes_frontend
+    environment:
+      VITE_API_URL: http://localhost:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - dementes_network
+    restart: unless-stopped
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  dementes_network:
+    driver: bridge

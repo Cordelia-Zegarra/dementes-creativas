@@ -20,9 +20,16 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (username, password, captcha) => {
+  const login = async (username, password, captchaId, captcha) => {
+    console.log('Intentando login con:', username);
     try {
-      const response = await api.post('/auth/login', { username, password, captcha });
+      const response = await api.post('/auth/login', { 
+        username, 
+        password, 
+        captchaId,
+        captcha 
+      });
+      console.log('Respuesta del servidor:', response.data);
       const { access_token, username: userName, role } = response.data;
       
       localStorage.setItem('token', access_token);
@@ -32,6 +39,7 @@ export const AuthProvider = ({ children }) => {
       setUser({ username: userName, role, token: access_token });
       return { success: true };
     } catch (error) {
+      console.error('Error en login:', error);
       return { success: false, error: error.response?.data?.message || 'Error de conexión' };
     }
   };

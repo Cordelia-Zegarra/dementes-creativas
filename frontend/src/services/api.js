@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const API_URL = 'http://localhost:3001';
+
+console.log('🔗 API_URL:', API_URL);
+
 const api = axios.create({
-  baseURL: 'http://localhost:3001',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,7 +35,6 @@ api.interceptors.response.use(
   }
 );
 
-// Métodos CRUD para productos
 export const productAPI = {
   getAll: () => api.get('/products'),
   getOne: (id) => api.get(`/products/${id}`),
