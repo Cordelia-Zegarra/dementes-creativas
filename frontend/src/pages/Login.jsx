@@ -104,13 +104,7 @@ const Login = () => {
                 <div 
                   dangerouslySetInnerHTML={{ __html: captchaSvg }} 
                   className="bg-white rounded p-1 flex-shrink-0 overflow-hidden"
-                  style={{ 
-                    width: '150px', 
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+                  style={{ width: '150px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 />
               ) : (
                 <div className="bg-gray-200 rounded p-2 w-[150px] h-[50px] flex items-center justify-center">
