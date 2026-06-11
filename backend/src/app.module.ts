@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
 import { LogsModule } from './logs/logs.module';
-import { ProductSeedService } from './seeds/product-seed.service';
 import { Product } from './products/entities/product.entity';
 import { User } from './auth/entities/user.entity';
 import { AccessLog } from './logs/entities/access-log.entity';
@@ -18,14 +17,12 @@ import { AccessLog } from './logs/entities/access-log.entity';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: +configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
+        url: configService.get('DATABASE_URL'),
         entities: [Product, User, AccessLog],
         synchronize: true,
-        logging: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
       inject: [ConfigService],
     }),
@@ -34,6 +31,5 @@ import { AccessLog } from './logs/entities/access-log.entity';
     AuthModule,
     LogsModule,
   ],
-  providers: [ProductSeedService],
 })
 export class AppModule {}
