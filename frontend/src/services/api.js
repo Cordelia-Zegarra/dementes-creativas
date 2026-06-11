@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://dementes-creativas-production.up.railway.app';
 
 console.log('🔗 API_URL:', API_URL);
 
